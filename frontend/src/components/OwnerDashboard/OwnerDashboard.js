@@ -1,7 +1,7 @@
 // components/OwnerDashboard.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaStar, FaChartLine, FaStore, FaUsers, FaThumbsUp, FaEye, FaHeart, FaTrophy, FaTrendingUp } from 'react-icons/fa';
+import { FaStar, FaChartLine, FaStore, FaUsers, FaThumbsUp, FaEye, FaHeart, FaTrophy, FaChartBar } from 'react-icons/fa';
 import API_BASE_URL from "../../config/api";
 import './OwnerDashboard.css';
 
@@ -189,11 +189,11 @@ function OwnerDashboard() {
                 </div>
               )}
 
-              <div className="overview-card">
-                <div className="card-header">
-                  <FaTrendingUp className="card-icon" />
-                  <h3>Activity Summary</h3>
-                </div>
+                              <div className="overview-card">
+                  <div className="card-header">
+                    <FaChartBar className="card-icon" />
+                    <h3>Activity Summary</h3>
+                  </div>
                 <div className="activity-summary">
                   <div className="activity-item">
                     <span className="activity-number">{stats.totalRatings}</span>

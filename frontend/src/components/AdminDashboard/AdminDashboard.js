@@ -1,7 +1,7 @@
 // components/AdminDashboard.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaStore, FaUsers, FaChartBar, FaPlus, FaEdit, FaTrash, FaStar, FaEye, FaCrown, FaTrophy, FaTrendingUp } from 'react-icons/fa';
+import { FaStore, FaUsers, FaChartBar, FaPlus, FaEdit, FaTrash, FaStar, FaEye, FaCrown, FaTrophy, FaChartLine } from 'react-icons/fa';
 import API_BASE_URL from "../../config/api";
 import './AdminDashboard.css';
 
@@ -181,7 +181,7 @@ function AdminDashboard() {
               <div className="overview-grid">
                 <div className="overview-card main-card">
                   <div className="card-header">
-                    <FaTrendingUp className="card-icon" />
+                    <FaChartLine className="card-icon" />
                     <h3>System Overview</h3>
                   </div>
                   <div className="overview-metrics">
