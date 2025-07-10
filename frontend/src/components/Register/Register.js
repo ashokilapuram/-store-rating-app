@@ -16,6 +16,7 @@ function Register() {
   });
 
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -27,12 +28,32 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
+    
     try {
+      console.log('Attempting registration with:', { ...formData, password: '***' });
+      console.log('API URL:', `${API_BASE_URL}/api/auth/register`);
+      
       await axios.post(`${API_BASE_URL}/api/auth/register`, formData);
+      console.log('Registration successful');
       alert("Registration successful! Please login to continue.");
       navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.error || "Registration failed. Please try again.");
+      console.error('Registration error:', err);
+      console.error('Error response:', err.response);
+      
+      if (err.response) {
+        // Server responded with error
+        setError(err.response.data.error || "Registration failed");
+      } else if (err.request) {
+        // Network error
+        setError("Network error - please check your connection");
+      } else {
+        // Other error
+        setError("An unexpected error occurred");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,6 +90,7 @@ function Register() {
                   required
                   autoComplete="name"
                   placeholder="Enter your full name"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -86,6 +108,7 @@ function Register() {
                   required
                   autoComplete="email"
                   placeholder="Enter your email address"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -103,6 +126,7 @@ function Register() {
                   required
                   autoComplete="new-password"
                   placeholder="Create a strong password"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -116,6 +140,7 @@ function Register() {
                   className={styles["register-select"]}
                   value={formData.role}
                   onChange={handleChange}
+                  disabled={isLoading}
                 >
                   <option value="user">
                     <FaUser /> Regular User
@@ -126,9 +151,13 @@ function Register() {
                 </select>
               </div>
 
-              <button className={styles["register-button"]}>
+              <button 
+                className={styles["register-button"]}
+                type="submit"
+                disabled={isLoading}
+              >
                 <FaUserPlus className={styles["button-icon"]} />
-                Create Account
+                {isLoading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
           </div>

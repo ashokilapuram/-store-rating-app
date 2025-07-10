@@ -10,3 +10,9 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: /opt/render/project/src/db/store-rating.db
+      - key: CORS_ORIGIN
+        value: https://store-rating-app.vercel.app

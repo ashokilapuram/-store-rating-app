@@ -4,6 +4,56 @@ const db = require('../db/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// Debug endpoint to list all users (remove in production)
+router.get('/users', (req, res) => {
+  db.all('SELECT id, name, email, role FROM users', [], (err, users) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ users });
+  });
+});
+
+// Create admin user endpoint
+router.post('/create-admin', async (req, res) => {
+  try {
+    const adminEmail = 'admin@store.com';
+    const adminPassword = 'admin123';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    
+    db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, user) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      if (!user) {
+        db.run(
+          'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+          ['Admin User', adminEmail, hashedPassword, 'admin'],
+          function(err) {
+            if (err) {
+              return res.status(500).json({ error: err.message });
+            }
+            res.json({ 
+              message: 'Admin user created successfully',
+              email: adminEmail,
+              password: adminPassword
+            });
+          }
+        );
+      } else {
+        res.json({ 
+          message: 'Admin user already exists',
+          email: adminEmail,
+          password: adminPassword
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Signup Route
 router.post('/register', async (req, res) => {
   const { name, email, password, address, role } = req.body;
@@ -32,7 +82,6 @@ router.post('/login', (req, res) => {
     process.env.JWT_SECRET,
     { expiresIn: '1d' }
     );
-
 
     res.json({ message: 'Login successful', token, role: user.role });
   });

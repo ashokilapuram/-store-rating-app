@@ -1,46 +1,12 @@
-const db = require('./database');
+const db = require('./db/database');
 const bcrypt = require('bcryptjs');
 
-// Create Users table
-db.run(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    address TEXT,
-    role TEXT CHECK(role IN ('admin', 'user', 'owner')) NOT NULL
-  )
-`);
-
-// Create Stores table
-db.run(`
-  CREATE TABLE IF NOT EXISTS stores (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT,
-    address TEXT
-  )
-`);
-
-// Create Ratings table
-db.run(`
-  CREATE TABLE IF NOT EXISTS ratings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    store_id INTEGER,
-    rating INTEGER CHECK(rating BETWEEN 1 AND 5),
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(store_id) REFERENCES stores(id)
-  )
-`);
-
-// Create admin user if it doesn't exist
-const createAdminUser = async () => {
+async function createAdminUser() {
   const adminEmail = 'admin@store.com';
   const adminPassword = 'admin123';
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
   
+  // Check if admin already exists
   db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, user) => {
     if (err) {
       console.error('Error checking admin user:', err);
@@ -48,6 +14,7 @@ const createAdminUser = async () => {
     }
     
     if (!user) {
+      // Create admin user
       db.run(
         'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
         ['Admin User', adminEmail, hashedPassword, 'admin'],
@@ -55,21 +22,24 @@ const createAdminUser = async () => {
           if (err) {
             console.error('Error creating admin user:', err);
           } else {
-            console.log('✅ Admin user created successfully');
-            console.log('📧 Admin Email: admin@store.com');
-            console.log('🔑 Admin Password: admin123');
+            console.log('✅ Admin user created successfully!');
+            console.log('📧 Email: admin@store.com');
+            console.log('🔑 Password: admin123');
+            console.log('👑 Role: admin');
           }
         }
       );
     } else {
       console.log('✅ Admin user already exists');
+      console.log('📧 Email: admin@store.com');
+      console.log('🔑 Password: admin123');
     }
   });
-};
+}
 
-// Create some sample users for testing
-const createSampleUsers = async () => {
-  const sampleUsers = [
+// Create additional test users
+async function createTestUsers() {
+  const testUsers = [
     {
       name: 'Test User',
       email: 'user@test.com',
@@ -81,10 +51,16 @@ const createSampleUsers = async () => {
       email: 'owner@test.com',
       password: 'owner123',
       role: 'owner'
+    },
+    {
+      name: 'Another Admin',
+      email: 'admin2@store.com',
+      password: 'admin123',
+      role: 'admin'
     }
   ];
 
-  for (const userData of sampleUsers) {
+  for (const userData of testUsers) {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     
     db.get('SELECT * FROM users WHERE email = ?', [userData.email], (err, user) => {
@@ -105,28 +81,54 @@ const createSampleUsers = async () => {
             }
           }
         );
+      } else {
+        console.log(`✅ ${userData.role} user already exists: ${userData.email}`);
       }
     });
   }
-};
+}
 
-// Initialize database with sample data
-const initializeDatabase = async () => {
-  console.log('🗄️ Initializing database...');
+// List all users in database
+function listAllUsers() {
+  console.log('\n📋 All Users in Database:');
+  console.log('========================');
   
-  // Wait a bit for tables to be created
-  setTimeout(async () => {
-    await createAdminUser();
-    await createSampleUsers();
+  db.all('SELECT id, name, email, role FROM users', [], (err, users) => {
+    if (err) {
+      console.error('Error fetching users:', err);
+      return;
+    }
     
-    console.log('\n📋 Sample Login Credentials:');
-    console.log('=============================');
+    if (users.length === 0) {
+      console.log('No users found in database');
+    } else {
+      users.forEach(user => {
+        console.log(`ID: ${user.id} | Name: ${user.name} | Email: ${user.email} | Role: ${user.role}`);
+      });
+    }
+  });
+}
+
+// Main execution
+async function main() {
+  console.log('🔧 Creating Admin and Test Users...');
+  console.log('=====================================\n');
+  
+  await createAdminUser();
+  await createTestUsers();
+  
+  // Wait a bit for all operations to complete
+  setTimeout(() => {
+    listAllUsers();
+    
+    console.log('\n📋 Login Credentials:');
+    console.log('=====================');
     console.log('👑 Admin: admin@store.com / admin123');
+    console.log('👑 Admin 2: admin2@store.com / admin123');
     console.log('👤 User: user@test.com / user123');
     console.log('🏪 Owner: owner@test.com / owner123');
-    console.log('=============================\n');
-  }, 1000);
-};
+    console.log('=====================\n');
+  }, 2000);
+}
 
-// Run initialization
-initializeDatabase();
+main().catch(console.error); 

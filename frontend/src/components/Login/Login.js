@@ -10,15 +10,25 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setErrorMsg("");
+    
     try {
+      console.log('Attempting login with:', { email, password: '***' });
+      console.log('API URL:', `${API_BASE_URL}/api/auth/login`);
+      
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email,
         password,
       });
+      
+      console.log('Login response:', res.data);
+      
       const { token } = res.data;
       const payload = JSON.parse(atob(token.split(".")[1]));
       const role = payload.role;
@@ -28,7 +38,21 @@ function Login() {
       else if (role === "user") navigate("/user/dashboard");
       else if (role === "owner") navigate("/owner/dashboard");
     } catch (err) {
-      setErrorMsg("Invalid email or password");
+      console.error('Login error:', err);
+      console.error('Error response:', err.response);
+      
+      if (err.response) {
+        // Server responded with error
+        setErrorMsg(err.response.data.error || "Login failed");
+      } else if (err.request) {
+        // Network error
+        setErrorMsg("Network error - please check your connection");
+      } else {
+        // Other error
+        setErrorMsg("An unexpected error occurred");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,6 +81,7 @@ function Login() {
                   required
                   className={styles["login-input"]}
                   autoComplete="username"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -69,10 +94,17 @@ function Login() {
                   required
                   className={styles["login-input"]}
                   autoComplete="current-password"
+                  disabled={isLoading}
                 />
               </div>
 
-              <button className={styles["login-button"]}>Login</button>
+              <button 
+                className={styles["login-button"]} 
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? "Logging in..." : "Login"}
+              </button>
             </form>
           </div>
         </div>
