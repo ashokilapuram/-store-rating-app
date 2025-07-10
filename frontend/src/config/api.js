@@ -4,7 +4,7 @@ const API_CONFIG = {
     baseURL: 'http://localhost:5000'
   },
   production: {
-    baseURL: process.env.REACT_APP_API_URL || 'https://store-rating-backend.onrender.com'
+    baseURL: process.env.REACT_APP_API_URL || 'https://store-rating-app-g8m7.onrender.com'
   }
 };
 
