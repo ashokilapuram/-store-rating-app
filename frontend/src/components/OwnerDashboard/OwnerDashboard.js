@@ -1,13 +1,13 @@
 // components/OwnerDashboard.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaStar, FaChartLine, FaStore, FaUsers, FaThumbsUp, FaEye, FaHeart, FaTrophy, FaChartBar } from 'react-icons/fa';
+import { FaStar, FaChartLine, FaStore, FaThumbsUp, FaTrophy, FaChartBar } from 'react-icons/fa';
 import API_BASE_URL from "../../config/api";
 import './OwnerDashboard.css';
 
 function OwnerDashboard() {
   const [ratings, setRatings] = useState([]);
-  const [averageRating, setAverageRating] = useState(0);
+  const [averageRating, setAverageRating] = useState(0); // Used in stats calculation
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalRatings: 0,

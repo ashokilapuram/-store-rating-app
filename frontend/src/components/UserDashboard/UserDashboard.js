@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaStar, FaMapMarkerAlt, FaUser, FaThumbsUp, FaComment, FaHeart, FaSearch, FaStore } from 'react-icons/fa';
+import { FaStar, FaMapMarkerAlt, FaUser, FaThumbsUp, FaComment, FaSearch, FaStore } from 'react-icons/fa';
 import API_BASE_URL from "../../config/api";
 import './UserDashboard.css';
 
@@ -91,14 +91,15 @@ function UserDashboard() {
     }
   };
 
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <FaStar
-        key={index}
-        className={`star ${index < rating ? 'filled' : 'empty'}`}
-      />
-    ));
-  };
+  // Star rendering function for future use
+  // const renderStars = (rating) => {
+  //   return Array.from({ length: 5 }, (_, index) => (
+  //     <FaStar
+  //       key={index}
+  //       className={`star ${index < rating ? 'filled' : 'empty'}`}
+  //     />
+  //   ));
+  // };
 
   const filteredStores = stores.filter(store => {
     const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
