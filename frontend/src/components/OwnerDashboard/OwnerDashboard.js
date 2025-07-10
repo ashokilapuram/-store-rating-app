@@ -7,7 +7,7 @@ import './OwnerDashboard.css';
 
 function OwnerDashboard() {
   const [ratings, setRatings] = useState([]);
-  const [averageRating, setAverageRating] = useState(0); // Used in stats calculation
+
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalRatings: 0,
@@ -31,7 +31,7 @@ function OwnerDashboard() {
         const avgRes = await axios.get(`${API_BASE_URL}/api/owner/average-rating`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setAverageRating(avgRes.data.average_rating || 0);
+
 
         // Calculate stats
         const totalRatings = ratingsRes.data.length;
