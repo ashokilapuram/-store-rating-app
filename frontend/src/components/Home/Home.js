@@ -4,7 +4,15 @@ import styles from './Home.module.css';
 import storeIcon from '../../assets/images/store-icon.jpeg';
 
 function Home() {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(() => {
+    // Show modal on first visit
+    const hasVisited = localStorage.getItem('hasVisitedStoreRate');
+    if (!hasVisited) {
+      localStorage.setItem('hasVisitedStoreRate', 'true');
+      return true;
+    }
+    return false;
+  });
 
   return (
     <>
@@ -56,6 +64,11 @@ function Home() {
             <div className={styles['modal-icon']}>🎉</div>
             <h3>Welcome to StoreRate!</h3>
             <p>Start exploring stores and sharing your experiences with the community.</p>
+            <div className={styles['modal-footer']}>
+              <p className={styles['modal-credit']}>
+                Store Rating App built by <strong>Ashok Ilapuram</strong>
+              </p>
+            </div>
           </div>
         </div>
       )}
