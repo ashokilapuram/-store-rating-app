@@ -30,7 +30,6 @@ function UserDashboard() {
 
     const fetchUserInfo = async () => {
       try {
-        const token = localStorage.getItem("token");
         // Get user info from token payload or use a default
         const userData = JSON.parse(localStorage.getItem("user") || "{}");
         setUserInfo(userData);
