@@ -17,9 +17,11 @@ function UserDashboard() {
     const fetchStores = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log("Fetching stores from:", api.stores);
         const res = await axios.get(api.stores, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Stores response:", res.data);
         setStores(res.data);
         setLoading(false);
       } catch (err) {
@@ -30,32 +32,8 @@ function UserDashboard() {
 
     const fetchUserInfo = async () => {
       try {
-        // Get user info from token payload or use a default
         const userData = JSON.parse(localStorage.getItem("user") || "{}");
-        console.log("User data from localStorage:", userData);
-        
-        if (!userData.name) {
-          // Try to get name from token payload
-          const token = localStorage.getItem("token");
-          if (token) {
-            try {
-              const payload = JSON.parse(atob(token.split(".")[1]));
-              console.log("Token payload:", payload);
-              setUserInfo({
-                name: payload.name || 'User',
-                email: payload.email || 'user@example.com',
-                role: payload.role || 'user'
-              });
-            } catch (tokenErr) {
-              console.error("Error parsing token:", tokenErr);
-              setUserInfo({ name: 'User' });
-            }
-          } else {
-            setUserInfo({ name: 'User' });
-          }
-        } else {
-          setUserInfo(userData);
-        }
+        setUserInfo(userData);
       } catch (err) {
         console.error("Error fetching user info:", err);
         setUserInfo({ name: 'User' });
@@ -138,11 +116,8 @@ function UserDashboard() {
     return "#ef4444";
   };
 
-  console.log("UserDashboard render - userInfo:", userInfo, "stores:", stores.length, "loading:", loading);
-
-  try {
-    return (
-      <div className="user-dashboard-root">
+  return (
+    <div className="user-dashboard-root">
       <div className="user-dashboard-container">
         <header className="user-dashboard-header">
           <div className="header-content">
@@ -197,12 +172,6 @@ function UserDashboard() {
             <div className="loading-container">
               <div className="loading-spinner"></div>
               <p>Loading stores...</p>
-            </div>
-          ) : stores.length === 0 ? (
-            <div className="empty-state">
-              <FaStore className="empty-icon" />
-              <h3>No stores available</h3>
-              <p>There are no stores in the system yet. Please contact an admin.</p>
             </div>
           ) : filteredStores.length === 0 ? (
             <div className="empty-state">
@@ -285,23 +254,7 @@ function UserDashboard() {
         </div>
       </div>
     </div>
-    );
-  } catch (error) {
-    console.error("Error rendering UserDashboard:", error);
-    return (
-      <div className="user-dashboard-root">
-        <div className="user-dashboard-container">
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <h2>Something went wrong</h2>
-            <p>Please refresh the page or try logging in again.</p>
-            <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', margin: '10px' }}>
-              Refresh Page
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  );
 }
 
 export default UserDashboard;
