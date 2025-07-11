@@ -1,70 +1,86 @@
-const db = require('./database');
+const { query } = require('./database');
 const bcrypt = require('bcryptjs');
 
 // Create Users table
-db.run(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    address TEXT,
-    role TEXT CHECK(role IN ('admin', 'user', 'owner')) NOT NULL
-  )
-`);
+const createUsersTable = async () => {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        address TEXT,
+        role VARCHAR(20) CHECK(role IN ('admin', 'user', 'owner')) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Users table created/verified');
+  } catch (err) {
+    console.error('❌ Error creating users table:', err);
+  }
+};
 
 // Create Stores table
-db.run(`
-  CREATE TABLE IF NOT EXISTS stores (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT,
-    address TEXT
-  )
-`);
+const createStoresTable = async () => {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS stores (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255),
+        address TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Stores table created/verified');
+  } catch (err) {
+    console.error('❌ Error creating stores table:', err);
+  }
+};
 
 // Create Ratings table
-db.run(`
-  CREATE TABLE IF NOT EXISTS ratings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    store_id INTEGER,
-    rating INTEGER CHECK(rating BETWEEN 1 AND 5),
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(store_id) REFERENCES stores(id)
-  )
-`);
+const createRatingsTable = async () => {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS ratings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        store_id INTEGER REFERENCES stores(id) ON DELETE CASCADE,
+        rating INTEGER CHECK(rating BETWEEN 1 AND 5),
+        review TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Ratings table created/verified');
+  } catch (err) {
+    console.error('❌ Error creating ratings table:', err);
+  }
+};
 
 // Create admin user if it doesn't exist
 const createAdminUser = async () => {
-  const adminEmail = 'admin@store.com';
-  const adminPassword = 'admin123';
-  const hashedPassword = await bcrypt.hash(adminPassword, 10);
-  
-  db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, user) => {
-    if (err) {
-      console.error('Error checking admin user:', err);
-      return;
-    }
+  try {
+    const adminEmail = 'admin@store.com';
+    const adminPassword = 'admin123';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
     
-    if (!user) {
-      db.run(
-        'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-        ['Admin User', adminEmail, hashedPassword, 'admin'],
-        function(err) {
-          if (err) {
-            console.error('Error creating admin user:', err);
-          } else {
-            console.log('✅ Admin user created successfully');
-            console.log('📧 Admin Email: admin@store.com');
-            console.log('🔑 Admin Password: admin123');
-          }
-        }
+    const result = await query('SELECT * FROM users WHERE email = $1', [adminEmail]);
+    
+    if (result.rows.length === 0) {
+      await query(
+        'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)',
+        ['Admin User', adminEmail, hashedPassword, 'admin']
       );
+      console.log('✅ Admin user created successfully');
+      console.log('📧 Admin Email: admin@store.com');
+      console.log('🔑 Admin Password: admin123');
     } else {
       console.log('✅ Admin user already exists');
     }
-  });
+  } catch (err) {
+    console.error('❌ Error creating admin user:', err);
+  }
 };
 
 // Create some sample users for testing
@@ -85,37 +101,35 @@ const createSampleUsers = async () => {
   ];
 
   for (const userData of sampleUsers) {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
-    db.get('SELECT * FROM users WHERE email = ?', [userData.email], (err, user) => {
-      if (err) {
-        console.error(`Error checking user ${userData.email}:`, err);
-        return;
-      }
+    try {
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
       
-      if (!user) {
-        db.run(
-          'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-          [userData.name, userData.email, hashedPassword, userData.role],
-          function(err) {
-            if (err) {
-              console.error(`Error creating user ${userData.email}:`, err);
-            } else {
-              console.log(`✅ ${userData.role} user created: ${userData.email}`);
-            }
-          }
+      const result = await query('SELECT * FROM users WHERE email = $1', [userData.email]);
+      
+      if (result.rows.length === 0) {
+        await query(
+          'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)',
+          [userData.name, userData.email, hashedPassword, userData.role]
         );
+        console.log(`✅ ${userData.role} user created: ${userData.email}`);
       }
-    });
+    } catch (err) {
+      console.error(`❌ Error creating user ${userData.email}:`, err);
+    }
   }
 };
 
 // Initialize database with sample data
 const initializeDatabase = async () => {
-  console.log('🗄️ Initializing database...');
+  console.log('🗄️ Initializing PostgreSQL database...');
   
-  // Wait a bit for tables to be created
-  setTimeout(async () => {
+  try {
+    // Create tables
+    await createUsersTable();
+    await createStoresTable();
+    await createRatingsTable();
+    
+    // Create sample users
     await createAdminUser();
     await createSampleUsers();
     
@@ -125,7 +139,9 @@ const initializeDatabase = async () => {
     console.log('👤 User: user@test.com / user123');
     console.log('🏪 Owner: owner@test.com / owner123');
     console.log('=============================\n');
-  }, 1000);
+  } catch (err) {
+    console.error('❌ Error initializing database:', err);
+  }
 };
 
 // Run initialization

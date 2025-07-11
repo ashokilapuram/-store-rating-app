@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaStar, FaMapMarkerAlt, FaUser, FaThumbsUp, FaComment, FaSearch, FaStore } from 'react-icons/fa';
-import API_BASE_URL from "../../config/api";
+import api from "../../config/api";
 import './UserDashboard.css';
 
 function UserDashboard() {
@@ -17,7 +17,7 @@ function UserDashboard() {
     const fetchStores = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/api/user/stores`, {
+        const res = await axios.get(api.stores, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStores(res.data);
@@ -31,7 +31,7 @@ function UserDashboard() {
     const fetchUserInfo = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/api/user/profile`, {
+        const res = await axios.get(api.stores, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserInfo(res.data);
@@ -64,7 +64,7 @@ function UserDashboard() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `${API_BASE_URL}/api/user/rate`,
+        api.rate,
         { store_id: storeId, rating, review },
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaUserLock } from 'react-icons/fa';
-import API_BASE_URL from "../../config/api";
+import api from "../../config/api";
 import styles from "./Login.module.css";
 import loginImg from "../../assets/images/login-illustration.jpeg";
 
@@ -20,9 +20,9 @@ function Login() {
     
     try {
       console.log('Attempting login with:', { email, password: '***' });
-      console.log('API URL:', `${API_BASE_URL}/api/auth/login`);
+      console.log('API URL:', api.login);
       
-      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+      const res = await axios.post(api.login, {
         email,
         password,
       });

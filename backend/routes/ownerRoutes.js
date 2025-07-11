@@ -1,48 +1,54 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/database');
+const { query } = require('../db/database');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // Get ratings submitted for this owner's store
-router.get('/ratings', authenticateToken, authorizeRoles('owner'), (req, res) => {
-  const ownerEmail = req.user.email;
-  console.log("OWNER JWT EMAIL:", ownerEmail);
+router.get('/ratings', authenticateToken, authorizeRoles('owner'), async (req, res) => {
+  try {
+    const ownerEmail = req.user.email;
+    console.log("OWNER JWT EMAIL:", ownerEmail);
 
-  // Find store owned by this user
-  const storeQuery = `SELECT id FROM stores WHERE email = ?`;
-  db.get(storeQuery, [ownerEmail], (err, store) => {
-    if (err || !store) return res.status(404).json({ error: 'Store not found' });
+    // Find store owned by this user
+    const storeResult = await query('SELECT id FROM stores WHERE email = $1', [ownerEmail]);
+    
+    if (storeResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Store not found' });
+    }
 
-    const ratingQuery = `
-      SELECT users.name AS user_name, users.email AS user_email, ratings.rating
+    const store = storeResult.rows[0];
+    const ratingResult = await query(`
+      SELECT users.name AS user_name, users.email AS user_email, ratings.rating, ratings.review
       FROM ratings
       JOIN users ON users.id = ratings.user_id
-      WHERE ratings.store_id = ?
-    `;
+      WHERE ratings.store_id = $1
+    `, [store.id]);
 
-    db.all(ratingQuery, [store.id], (err, rows) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ storeId: store.id, ratings: rows });
-    });
-  });
+    res.json({ storeId: store.id, ratings: ratingResult.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Get average rating for this store
-router.get('/average-rating', authenticateToken, authorizeRoles('owner'), (req, res) => {
-  const ownerEmail = req.user.email;
+router.get('/average-rating', authenticateToken, authorizeRoles('owner'), async (req, res) => {
+  try {
+    const ownerEmail = req.user.email;
 
-  const storeQuery = `SELECT id FROM stores WHERE email = ?`;
-  db.get(storeQuery, [ownerEmail], (err, store) => {
-    if (err || !store) return res.status(404).json({ error: 'Store not found' });
+    const storeResult = await query('SELECT id FROM stores WHERE email = $1', [ownerEmail]);
+    
+    if (storeResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Store not found' });
+    }
 
-    const avgQuery = `SELECT AVG(rating) as average_rating FROM ratings WHERE store_id = ?`;
+    const store = storeResult.rows[0];
+    const avgResult = await query('SELECT AVG(rating) as average_rating FROM ratings WHERE store_id = $1', [store.id]);
 
-    db.get(avgQuery, [store.id], (err, row) => {
-      if (err) return res.status(500).json({ error: err.message });
-
-      res.json({ storeId: store.id, average_rating: row.average_rating || 0 });
-    });
-  });
+    const average_rating = parseFloat(avgResult.rows[0].average_rating) || 0;
+    res.json({ storeId: store.id, average_rating });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

@@ -2,12 +2,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaStar, FaChartLine, FaStore, FaThumbsUp, FaTrophy, FaChartBar } from 'react-icons/fa';
-import API_BASE_URL from "../../config/api";
+import api from "../../config/api";
 import './OwnerDashboard.css';
 
 function OwnerDashboard() {
   const [ratings, setRatings] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalRatings: 0,
@@ -22,25 +21,27 @@ function OwnerDashboard() {
         const token = localStorage.getItem("token");
         
         // Fetch ratings
-        const ratingsRes = await axios.get(`${API_BASE_URL}/api/owner/ratings`, {
+        const ratingsRes = await axios.get(api.ownerRatings, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setRatings(ratingsRes.data);
+        
+        // Ensure ratings is always an array
+        const ratingsData = Array.isArray(ratingsRes.data) ? ratingsRes.data : [];
+        setRatings(ratingsData);
 
         // Fetch average rating
-        const avgRes = await axios.get(`${API_BASE_URL}/api/owner/average-rating`, {
+        const avgRes = await axios.get(api.ownerAverageRating, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-
         // Calculate stats
-        const totalRatings = ratingsRes.data.length;
-        const uniqueStores = new Set(ratingsRes.data.map(rating => rating.store_id)).size;
+        const totalRatings = ratingsData.length;
+        const uniqueStores = new Set(ratingsData.map(rating => rating.store_id)).size;
         const avgRating = avgRes.data.average_rating || 0;
         
         // Find top rated store
         const storeRatings = {};
-        ratingsRes.data.forEach(rating => {
+        ratingsData.forEach(rating => {
           if (!storeRatings[rating.store_id]) {
             storeRatings[rating.store_id] = { total: 0, count: 0, name: rating.store_name };
           }
@@ -69,6 +70,14 @@ function OwnerDashboard() {
       } catch (err) {
         console.error("Error fetching data:", err);
         setLoading(false);
+        // Set default values on error
+        setRatings([]);
+        setStats({
+          totalRatings: 0,
+          totalStores: 0,
+          averageRating: 0,
+          topRatedStore: null
+        });
       }
     };
 
@@ -189,11 +198,11 @@ function OwnerDashboard() {
                 </div>
               )}
 
-                              <div className="overview-card">
-                  <div className="card-header">
-                    <FaChartBar className="card-icon" />
-                    <h3>Activity Summary</h3>
-                  </div>
+              <div className="overview-card">
+                <div className="card-header">
+                  <FaChartBar className="card-icon" />
+                  <h3>Activity Summary</h3>
+                </div>
                 <div className="activity-summary">
                   <div className="activity-item">
                     <span className="activity-number">{stats.totalRatings}</span>
@@ -218,7 +227,7 @@ function OwnerDashboard() {
               </div>
             </div>
 
-            {ratings.length === 0 ? (
+            {!Array.isArray(ratings) || ratings.length === 0 ? (
               <div className="empty-state">
                 <FaStar className="empty-icon" />
                 <h3>No ratings yet</h3>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaUserPlus, FaUser, FaEnvelope, FaLock, FaStore, FaCrown } from 'react-icons/fa';
-import API_BASE_URL from "../../config/api";
+import api from "../../config/api";
 import styles from './Register.module.css';
 
 function Register() {
@@ -32,9 +32,9 @@ function Register() {
     
     try {
       console.log('Attempting registration with:', { ...formData, password: '***' });
-      console.log('API URL:', `${API_BASE_URL}/api/auth/register`);
+      console.log('API URL:', api.register);
       
-      await axios.post(`${API_BASE_URL}/api/auth/register`, formData);
+      await axios.post(api.register, formData);
       console.log('Registration successful');
       alert("Registration successful! Please login to continue.");
       navigate("/login");

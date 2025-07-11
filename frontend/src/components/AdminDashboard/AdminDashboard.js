@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaStore, FaUsers, FaChartBar, FaPlus, FaEdit, FaTrash, FaStar, FaEye, FaCrown, FaTrophy, FaChartLine } from 'react-icons/fa';
-import API_BASE_URL from "../../config/api";
+import api from "../../config/api";
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -22,19 +22,19 @@ function AdminDashboard() {
         const token = localStorage.getItem("token");
         
         // Fetch stores
-        const storesRes = await axios.get(`${API_BASE_URL}/api/admin/stores`, {
+        const storesRes = await axios.get(api.adminStores, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStores(storesRes.data);
 
         // Fetch users
-        const usersRes = await axios.get(`${API_BASE_URL}/api/admin/users`, {
+        const usersRes = await axios.get(api.adminUsers, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(usersRes.data);
 
         // Fetch summary
-        const summaryRes = await axios.get(`${API_BASE_URL}/api/admin/summary`, {
+        const summaryRes = await axios.get(api.adminSummary, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSummary(summaryRes.data);
@@ -53,13 +53,13 @@ function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE_URL}/api/admin/add-user`, newUser, {
+      await axios.post(api.addUser, newUser, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowAddUser(false);
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       // Refresh users list
-      const usersRes = await axios.get(`${API_BASE_URL}/api/admin/users`, {
+      const usersRes = await axios.get(api.adminUsers, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(usersRes.data);
@@ -72,13 +72,13 @@ function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE_URL}/api/admin/add-store`, newStore, {
+      await axios.post(api.addStore, newStore, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowAddStore(false);
       setNewStore({ name: '', address: '', owner_id: '' });
       // Refresh stores list
-      const storesRes = await axios.get(`${API_BASE_URL}/api/admin/stores`, {
+      const storesRes = await axios.get(api.adminStores, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStores(storesRes.data);

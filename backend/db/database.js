@@ -1,26 +1,52 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
+const { Pool } = require('pg');
 
-// Use environment variable for database path or default to local path
-const dbPath = process.env.DB_PATH || path.resolve(__dirname, 'store-rating.db');
+// Database configuration
+const dbConfig = {
+  development: {
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'store_rating_dev',
+    password: process.env.DB_PASSWORD || 'password',
+    port: process.env.DB_PORT || 5432,
+  },
+  production: {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  }
+};
 
-// Ensure the directory exists
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
+// Get environment
+const environment = process.env.NODE_ENV || 'development';
+const config = dbConfig[environment];
 
-const db = new sqlite3.Database(dbPath, (err) => {
+// Create connection pool
+const pool = new Pool(config);
+
+// Test the connection
+pool.connect((err, client, release) => {
   if (err) {
-    console.error('Error opening database:', err.message);
-    console.error('Database path:', dbPath);
+    console.error('❌ Error connecting to PostgreSQL:', err.message);
+    console.error('Database config:', {
+      host: config.host || 'connection string',
+      database: config.database || 'from connection string',
+      user: config.user || 'from connection string'
+    });
   } else {
-    console.log('Connected to SQLite database at:', dbPath);
+    console.log('✅ Connected to PostgreSQL database');
+    if (environment === 'development') {
+      console.log(`🗄️ Database: ${config.database}`);
+      console.log(`🌍 Host: ${config.host}:${config.port}`);
+    } else {
+      console.log('🌍 Environment: Production');
+    }
+    release();
   }
 });
 
-// Enable foreign keys
-db.run('PRAGMA foreign_keys = ON');
+// Helper function to run queries
+const query = (text, params) => pool.query(text, params);
 
-module.exports = db;
+// Export both pool and query function
+module.exports = { pool, query };

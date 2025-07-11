@@ -48,15 +48,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Add a test endpoint
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    message: 'Backend is running!',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
