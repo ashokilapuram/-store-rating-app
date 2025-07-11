@@ -25,12 +25,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://store-rating-app.vercel.app',
-    'https://store-rating-app-frontend.vercel.app',
-    process.env.CORS_ORIGIN
-  ].filter(Boolean),
+  origin: true, // Allow all origins for now
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
