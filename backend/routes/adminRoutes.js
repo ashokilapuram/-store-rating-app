@@ -108,4 +108,33 @@ router.post('/add-user', authenticateToken, authorizeRoles('admin'), async (req,
   }
 });
 
+// Create sample stores for testing
+router.post('/create-sample-stores', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  try {
+    const sampleStores = [
+      { name: 'Coffee Corner', email: 'coffee@corner.com', address: '123 Main St, Downtown', store_owner_email: 'owner@test.com' },
+      { name: 'Pizza Palace', email: 'pizza@palace.com', address: '456 Oak Ave, Uptown', store_owner_email: 'owner@test.com' },
+      { name: 'Book Store', email: 'books@store.com', address: '789 Pine Rd, Midtown', store_owner_email: 'owner@test.com' },
+      { name: 'Tech Shop', email: 'tech@shop.com', address: '321 Elm St, Downtown', store_owner_email: null },
+      { name: 'Fashion Boutique', email: 'fashion@boutique.com', address: '654 Maple Dr, Uptown', store_owner_email: null }
+    ];
+
+    const createdStores = [];
+    for (const store of sampleStores) {
+      const result = await query(
+        'INSERT INTO stores (name, email, address, store_owner_email) VALUES ($1, $2, $3, $4) RETURNING *',
+        [store.name, store.email, store.address, store.store_owner_email]
+      );
+      createdStores.push(result.rows[0]);
+    }
+    
+    res.status(201).json({ 
+      message: 'Sample stores created successfully',
+      stores: createdStores 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

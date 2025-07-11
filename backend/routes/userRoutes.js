@@ -6,6 +6,8 @@ const { authenticateToken, authorizeRoles } = require('../middleware/authMiddlew
 // Get all stores (open to logged-in users)
 router.get('/stores', authenticateToken, authorizeRoles('user', 'admin', 'owner'), async (req, res) => {
   try {
+    console.log("Fetching stores for user:", req.user.email);
+    
     const result = await query(`
       SELECT 
         s.id, 
@@ -14,10 +16,13 @@ router.get('/stores', authenticateToken, authorizeRoles('user', 'admin', 'owner'
         ROUND(AVG(r.rating), 1) as average_rating
       FROM stores s
       LEFT JOIN ratings r ON s.id = r.store_id
-      GROUP BY s.id
+      GROUP BY s.id, s.name, s.address
     `);
+    
+    console.log("Stores found:", result.rows.length);
     res.json(result.rows);
   } catch (err) {
+    console.error("Error fetching stores:", err);
     res.status(500).json({ error: err.message });
   }
 });
