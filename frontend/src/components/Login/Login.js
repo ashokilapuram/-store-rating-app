@@ -33,7 +33,14 @@ function Login() {
       const payload = JSON.parse(atob(token.split(".")[1]));
       const role = payload.role;
 
+      // Store token and user data
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify({
+        name: payload.name || email.split('@')[0],
+        email: payload.email || email,
+        role: role
+      }));
+      
       if (role === "admin") navigate("/admin/dashboard");
       else if (role === "user") navigate("/user/dashboard");
       else if (role === "owner") navigate("/owner/dashboard");

@@ -31,12 +31,12 @@ function UserDashboard() {
     const fetchUserInfo = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(api.stores, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUserInfo(res.data);
+        // Get user info from token payload or use a default
+        const userData = JSON.parse(localStorage.getItem("user") || "{}");
+        setUserInfo(userData);
       } catch (err) {
         console.error("Error fetching user info:", err);
+        setUserInfo({ name: 'User' });
       }
     };
 
