@@ -14,7 +14,8 @@ function AdminDashboard() {
   const [showAddUser, setShowAddUser] = useState(false);
   const [showAddStore, setShowAddStore] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
-  const [newStore, setNewStore] = useState({ name: '', address: '', owner_id: '' });
+  const [newStore, setNewStore] = useState({ name: '', address: '', store_owner_email: '' });
+  const [owners, setOwners] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,6 +33,12 @@ function AdminDashboard() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(usersRes.data);
+
+        // Fetch owners for store assignment
+        const ownersRes = await axios.get(api.adminOwners, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setOwners(ownersRes.data);
 
         // Fetch summary
         const summaryRes = await axios.get(api.adminSummary, {
@@ -76,7 +83,7 @@ function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowAddStore(false);
-      setNewStore({ name: '', address: '', owner_id: '' });
+      setNewStore({ name: '', address: '', store_owner_email: '' });
       // Refresh stores list
       const storesRes = await axios.get(api.adminStores, {
         headers: { Authorization: `Bearer ${token}` },
@@ -406,13 +413,19 @@ function AdminDashboard() {
                         />
                       </div>
                       <div className="form-group">
-                        <label>Owner ID</label>
-                        <input
-                          type="number"
-                          value={newStore.owner_id}
-                          onChange={(e) => setNewStore({...newStore, owner_id: e.target.value})}
+                        <label>Store Owner</label>
+                        <select
+                          value={newStore.store_owner_email}
+                          onChange={(e) => setNewStore({...newStore, store_owner_email: e.target.value})}
                           required
-                        />
+                        >
+                          <option value="">Select Owner</option>
+                          {owners.map((owner) => (
+                            <option key={owner.email} value={owner.email}>
+                              {owner.name} ({owner.email})
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <div className="modal-actions">
                         <button type="button" onClick={() => setShowAddStore(false)} className="cancel-btn">

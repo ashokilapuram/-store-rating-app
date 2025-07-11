@@ -15,6 +15,7 @@ const api = {
   adminDashboard: `${API_BASE_URL}/api/admin/dashboard`,
   adminStores: `${API_BASE_URL}/api/admin/stores`,
   adminUsers: `${API_BASE_URL}/api/admin/users`,
+  adminOwners: `${API_BASE_URL}/api/admin/owners`,
   adminSummary: `${API_BASE_URL}/api/admin/summary`,
   addStore: `${API_BASE_URL}/api/admin/add-store`,
   addUser: `${API_BASE_URL}/api/admin/add-user`,
