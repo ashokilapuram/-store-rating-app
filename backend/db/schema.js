@@ -30,7 +30,7 @@ const createStoresTable = async () => {
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255),
         address TEXT,
-        store_owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        store_owner_email VARCHAR(255) REFERENCES users(email) ON DELETE SET NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);

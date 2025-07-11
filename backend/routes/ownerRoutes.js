@@ -6,11 +6,11 @@ const { authenticateToken, authorizeRoles } = require('../middleware/authMiddlew
 // Get ratings submitted for this owner's store
 router.get('/ratings', authenticateToken, authorizeRoles('owner'), async (req, res) => {
   try {
-    const ownerId = req.user.userId;
-    console.log("OWNER ID:", ownerId);
+    const ownerEmail = req.user.email;
+    console.log("OWNER EMAIL:", ownerEmail);
 
     // Find stores owned by this user
-    const storeResult = await query('SELECT id, name, address FROM stores WHERE store_owner_id = $1', [ownerId]);
+    const storeResult = await query('SELECT id, name, address FROM stores WHERE store_owner_email = $1', [ownerEmail]);
     
     if (storeResult.rows.length === 0) {
       return res.status(404).json({ error: 'No stores found for this owner' });
@@ -36,7 +36,7 @@ router.get('/ratings', authenticateToken, authorizeRoles('owner'), async (req, r
     }
 
     res.json({ 
-      ownerId: ownerId, 
+      ownerEmail: ownerEmail, 
       stores: storeResult.rows,
       ratings: allRatings 
     });
@@ -48,9 +48,9 @@ router.get('/ratings', authenticateToken, authorizeRoles('owner'), async (req, r
 // Get average rating for all stores owned by this owner
 router.get('/average-rating', authenticateToken, authorizeRoles('owner'), async (req, res) => {
   try {
-    const ownerId = req.user.userId;
+    const ownerEmail = req.user.email;
 
-    const storeResult = await query('SELECT id, name FROM stores WHERE store_owner_id = $1', [ownerId]);
+    const storeResult = await query('SELECT id, name FROM stores WHERE store_owner_email = $1', [ownerEmail]);
     
     if (storeResult.rows.length === 0) {
       return res.status(404).json({ error: 'No stores found for this owner' });
@@ -69,7 +69,7 @@ router.get('/average-rating', authenticateToken, authorizeRoles('owner'), async 
     }
 
     res.json({ 
-      ownerId: ownerId, 
+      ownerEmail: ownerEmail, 
       stores: storeAverages 
     });
   } catch (err) {

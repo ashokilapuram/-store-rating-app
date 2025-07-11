@@ -33,7 +33,7 @@ router.get('/users', authenticateToken, authorizeRoles('admin'), async (req, res
 // Get owners for store assignment
 router.get('/owners', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   try {
-    const result = await query("SELECT id, name, email FROM users WHERE role = 'owner'");
+    const result = await query("SELECT name, email FROM users WHERE role = 'owner'");
     res.json(result.rows);
   } catch (err) {
     console.error("Error fetching owners:", err);
@@ -66,12 +66,12 @@ router.get('/summary', authenticateToken, authorizeRoles('admin'), async (req, r
 // Add a new store
 router.post('/add-store', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   try {
-    const { name, email, address, store_owner_id } = req.body;
-    console.log("Adding store:", name, email, address, "Owner ID:", store_owner_id);
+    const { name, email, address, store_owner_email } = req.body;
+    console.log("Adding store:", name, email, address, "Owner Email:", store_owner_email);
 
     const result = await query(
-      'INSERT INTO stores (name, email, address, store_owner_id) VALUES ($1, $2, $3, $4) RETURNING id',
-      [name, email, address, store_owner_id]
+      'INSERT INTO stores (name, email, address, store_owner_email) VALUES ($1, $2, $3, $4) RETURNING id',
+      [name, email, address, store_owner_email]
     );
     
     res.status(201).json({ 
