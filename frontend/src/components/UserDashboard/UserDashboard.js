@@ -102,11 +102,13 @@ function UserDashboard() {
   // };
 
   const filteredStores = stores.filter(store => {
-    const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         store.address.toLowerCase().includes(searchTerm.toLowerCase());
+    const name = store.name || "";
+    const address = store.address || "";
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         address.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRating = filterRating === "all" || 
-                         (filterRating === "rated" && store.average_rating) ||
-                         (filterRating === "unrated" && !store.average_rating);
+                         (filterRating === "rated" && store.average_rating != null) ||
+                         (filterRating === "unrated" && store.average_rating == null);
     return matchesSearch && matchesRating;
   });
 
@@ -185,14 +187,14 @@ function UserDashboard() {
                 <div key={store.id} className="store-card">
                   <div className="store-header">
                     <div className="store-info">
-                      <h3 className="store-name">{store.name}</h3>
+                      <h3 className="store-name">{store.name || "Unnamed Store"}</h3>
                       <div className="store-location">
                         <FaMapMarkerAlt className="location-icon" />
-                        <span>{store.address}</span>
+                        <span>{store.address || "No address"}</span>
                       </div>
                     </div>
                     <div className="store-rating-display">
-                      {store.average_rating ? (
+                      {typeof store.average_rating === "number" ? (
                         <div className="rating-badge" style={{ backgroundColor: getRatingColor(store.average_rating) }}>
                           <FaStar className="rating-star" />
                           <span>{store.average_rating.toFixed(1)}</span>
